@@ -32,6 +32,7 @@ public class Jaikin {
         private boolean isAnimating = false;
         private boolean showEmptyMessage = false;
         private boolean closed = false; // closed polyline toggle (L)
+        private boolean showPersistentLine = false; // <-- new flag: only draw line after Enter
         private int currentStep = 0;
         private final int maxSteps = 6;
         private final int stepDurationMs = 1000; // 1 second per step
@@ -111,6 +112,7 @@ public class Jaikin {
                 animationSteps.add(copy(current));
             }
             isAnimating = true;
+            showPersistentLine = false; // <-- ensure we don't show the line while animating
             currentStep = 0;
             animationTimer.setDelay(stepDurationMs);
             animationTimer.start();
@@ -135,13 +137,13 @@ public class Jaikin {
             int y = 20;
             g2.drawString("Click to add points. Drag points to move. Enter to start animation.", 10, y);
             y += 18;
-            g2.drawString("2 points -> straight line, 3+ points -> smooth curve. C to clear, L to toggle closed/open, Esc to exit.", 10, y);
+            g2.drawString("2 points -> straight line (only after Enter), 3+ points -> smooth curve. C to clear, L to toggle closed/open, Esc to exit.", 10, y);
             y += 18;
             g2.drawString("Mode: " + (closed ? "CLOSED" : "OPEN") + "    Points: " + positions.size(), 10, y);
 
-            // Draw persistent straight line if exactly 2 points (and not animating)
+            // Draw persistent straight line only if user requested it (showPersistentLine)
             g2.setStroke(new BasicStroke(2f));
-            if (!isAnimating && positions.size() == 2) {
+            if (!isAnimating && showPersistentLine && positions.size() >= 2) {
                 g2.setColor(Color.WHITE);
                 Point2D.Float a = positions.get(0), b = positions.get(1);
                 g2.drawLine(Math.round(a.x), Math.round(a.y), Math.round(b.x), Math.round(b.y));
@@ -205,6 +207,7 @@ public class Jaikin {
                     draggingIndex = idx;
                 } else {
                     positions.add(clicked);
+                    showPersistentLine = false; // <-- hide persistent line when user modifies points
                     System.out.printf("Point %d added at (%.1f, %.1f)%n", positions.size(), clicked.x, clicked.y);
                     repaint();
                 }
@@ -252,7 +255,8 @@ public class Jaikin {
                             repaint();
                             break;
                         case 2:
-                            // draw straight persistent line (just repaint)
+                            // draw straight persistent line only after Enter
+                            showPersistentLine = true; // <-- set flag here
                             System.out.println(String.format("Drawing persistent line from (%.1f, %.1f) to (%.1f, %.1f)",
                                     positions.get(0).x, positions.get(0).y, positions.get(1).x, positions.get(1).y));
                             repaint();
@@ -268,6 +272,7 @@ public class Jaikin {
                 positions.clear();
                 animationSteps.clear();
                 showEmptyMessage = false;
+                showPersistentLine = false; // <-- clear the line flag too
                 System.out.println("Cleared all points and animation.");
                 repaint();
             } else if (code == KeyEvent.VK_ESCAPE) {
