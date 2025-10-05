@@ -29,11 +29,11 @@ if [ $? -eq 0 ]; then
     echo "Compilation successful."
     
     # Run Main class
-    if [ -f "$BUILD_DIR/Jaikin.class" ]; then
-        echo "Running Jaikin..."
-        java -cp "$BUILD_DIR" Jaikin
+    if [ -f "$BUILD_DIR/Main.class" ]; then
+        echo "Running Main..."
+        java -cp "$BUILD_DIR" Main
     else
-        echo "Jaikin class not found. Make sure Jaikin.java is in the root of '$PROGRAM_DIR'."
+        echo "Main class not found. Make sure Main.java is in the root of '$PROGRAM_DIR'."
         exit 1
     fi
 else
