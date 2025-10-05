@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChaikinPanel extends JPanel implements MouseListener, KeyListener, ActionListener {
+    private static final double POINT_RADIUS = 5.0;
     private final List<Point> points = new ArrayList<>();
     private List<Point> linesPoints = new ArrayList<>();
     private boolean animationStarted = false;
@@ -65,7 +66,19 @@ public class ChaikinPanel extends JPanel implements MouseListener, KeyListener, 
     @Override
     public void mousePressed(MouseEvent e) {
         if (!animationStarted && e.getButton() == MouseEvent.BUTTON1) {
-            points.add(new Point(e.getX(), e.getY()));
+            double clickX = e.getX();
+            double clickY = e.getY();
+            
+            //nearpoint check
+            Point nearestPoint = findNearestPoint(clickX, clickY);
+            if (nearestPoint != null) {
+                //change the prev point position
+                nearestPoint.x = clickX;
+                nearestPoint.y = clickY;
+            } else {
+                //add it normally if its out its range
+                points.add(new Point(clickX, clickY));
+            }
             repaint();
         }
     }
@@ -150,6 +163,17 @@ public class ChaikinPanel extends JPanel implements MouseListener, KeyListener, 
                 input.get(input.size() - 1).y));
 
         return newPoints;
+    }
+
+    //find a9rab noqta
+    private Point findNearestPoint(double x, double y) {
+        for (Point p : points) {
+            double distance = Math.sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
+            if (distance <= POINT_RADIUS) {
+                return p;
+            }
+        }
+        return null;
     }
 
     // Simple 2D point class with doubles for coordinates
